@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask-SocketIO Example</title>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"
+        integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
+        crossorigin="anonymous"></script>
+    <style>
+        #container {
+            display: none;
+        }
+
+        #image_container {
+            display: none
+        }
+
+        #result {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <button id="test_start">Start Test</button>
+
+    <div class="container" id="container">
+        <center>
+
+            <p id="question_text"></p> <br><br>
+
+            <div id="image_container">
+                <img src="">
+            </div> <br>
+
+            <button id="a_text" onclick="check('A');">A</button><br><br>
+            <button id="b_text" onclick="check('B');">B</button><br><br>
+            <button id="c_text" onclick="check('C');">C</button><br><br>
+            <button id="d_text" onclick="check('D');">D</button><br><br>
+
+            <br><br>
+
+            <p id="result"></p>
+
+            <br><br><br>
+
+            <button id="next_q" onclick="next_question();">Next Question</button>
+
+        </center>
+    </div>
+
+    <script>
+        const socket = io({ autoConnect: false });
+
+        document.getElementById("test_start").addEventListener("click", function () {
+
+            socket.connect();
+
+            socket.on("connect", function () {
+                socket.emit("user_join");
+            })
+
+            document.getElementById("test_start").style.display = "none";
+            document.getElementById("container").style.display = "block";
+        })
+
+        function check(answer) {
+            socket.on("connect", function () {
+                socket.emit("check_answer", answer);
+            })
+        }
+
+        function next_question() {
+            socket.on("connect", function () {
+                socket.emit("next_question");
+            })
+        }
+
+        socket.on("get_question", function (data) {
+            document.getElementById("result").style.display = "none";
+        })
+
+        socket.on("check_complete", function (data) {
+            document.getElementById("result").style.display = "block";
+        })
+    </script>
+</body>
+
+</html>
