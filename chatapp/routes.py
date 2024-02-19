@@ -16,8 +16,10 @@ def handle_connect():
 def handle_user_join():
     print("User joined!")
 
-@socketio.on("new_message")
-def handle_new_message(message):
-    print(f"New message: {message}")
-    username = None
-    emit("chat", {"message": message, "username": username}, broadcast=True)
+@socketio.on("next_question")
+def handle_new_message():
+    emit("get_question", {"message": "a", "username": "b"})
+
+@socketio.on("check_answer")
+def handle_new_message(data):
+    emit("check_complete", {"res":data=="B", "cor_res":"B", "your_ans":data})

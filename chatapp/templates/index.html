@@ -69,23 +69,29 @@
         })
 
         function check(answer) {
-            socket.on("connect", function () {
-                socket.emit("check_answer", answer);
-            })
+            socket.emit("check_answer", answer);
         }
 
         function next_question() {
-            socket.on("connect", function () {
-                socket.emit("next_question");
-            })
+            socket.emit("next_question");
         }
 
         socket.on("get_question", function (data) {
             document.getElementById("result").style.display = "none";
+            document.getElementById("a_text").disabled = false;
+            document.getElementById("b_text").disabled = false;
+            document.getElementById("c_text").disabled = false;
+            document.getElementById("d_text").disabled = false;
+            console.log(data);
         })
 
         socket.on("check_complete", function (data) {
             document.getElementById("result").style.display = "block";
+            document.getElementById("a_text").disabled = true;
+            document.getElementById("b_text").disabled = true;
+            document.getElementById("c_text").disabled = true;
+            document.getElementById("d_text").disabled = true;
+            console.log(data);
         })
     </script>
 </body>
