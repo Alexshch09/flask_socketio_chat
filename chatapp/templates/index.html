@@ -66,6 +66,12 @@
 
             document.getElementById("test_start").style.display = "none";
             document.getElementById("container").style.display = "block";
+
+            document.getElementById("question_text").innerText = data.question_text;
+            document.getElementById("a_text").innerText = data.option_a;
+            document.getElementById("b_text").innerText = data.option_b;
+            document.getElementById("c_text").innerText = data.option_c;
+            document.getElementById("d_text").innerText = data.option_d;
         })
 
         function check(answer) {
@@ -83,6 +89,12 @@
             document.getElementById("c_text").disabled = false;
             document.getElementById("d_text").disabled = false;
             console.log(data);
+
+            document.getElementById("question_text").innerText = data.question_text;
+            document.getElementById("a_text").innerText = data.option_a;
+            document.getElementById("b_text").innerText = data.option_b;
+            document.getElementById("c_text").innerText = data.option_c;
+            document.getElementById("d_text").innerText = data.option_d;
         })
 
         socket.on("check_complete", function (data) {
