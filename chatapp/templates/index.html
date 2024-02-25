@@ -66,12 +66,6 @@
 
             document.getElementById("test_start").style.display = "none";
             document.getElementById("container").style.display = "block";
-
-            document.getElementById("question_text").innerText = data.question_text;
-            document.getElementById("a_text").innerText = data.option_a;
-            document.getElementById("b_text").innerText = data.option_b;
-            document.getElementById("c_text").innerText = data.option_c;
-            document.getElementById("d_text").innerText = data.option_d;
         })
 
         function check(answer) {
@@ -88,13 +82,19 @@
             document.getElementById("b_text").disabled = false;
             document.getElementById("c_text").disabled = false;
             document.getElementById("d_text").disabled = false;
-            console.log(data);
 
-            document.getElementById("question_text").innerText = data.question_text;
-            document.getElementById("a_text").innerText = data.option_a;
-            document.getElementById("b_text").innerText = data.option_b;
-            document.getElementById("c_text").innerText = data.option_c;
-            document.getElementById("d_text").innerText = data.option_d;
+            document.getElementById("a_text").style = "";
+            document.getElementById("b_text").style = "";
+            document.getElementById("c_text").style = "";
+            document.getElementById("d_text").style = "";
+
+            document.getElementById("question_text").innerText = data.text;
+
+            document.getElementById("a_text").innerText = data.a;
+            document.getElementById("b_text").innerText = data.b;
+            document.getElementById("c_text").innerText = data.c;
+            document.getElementById("d_text").innerText = data.d;
+
         })
 
         socket.on("check_complete", function (data) {
@@ -103,6 +103,15 @@
             document.getElementById("b_text").disabled = true;
             document.getElementById("c_text").disabled = true;
             document.getElementById("d_text").disabled = true;
+
+            a = {"A": "a_text", "B": "b_text", "C": "c_text", "D": "d_text"}
+
+            if (data.res) {
+                document.getElementById("result").innerText = "Correct";
+                document.getElementById(a[data.cor_res]).style = "background: green";
+            } else {
+                document.getElementById("result").innerText = "Несorrect!!! Учись дальше!";
+            }
             console.log(data);
         })
     </script>

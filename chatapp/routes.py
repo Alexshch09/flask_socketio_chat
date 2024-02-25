@@ -1,24 +1,22 @@
-from flask import Blueprint, render_template
-from flask import request, jsonify
-from .extensions import socketio, emit
-from flask import jsonify
+from flask import Blueprint, render_template, session, redirect, url_for, flash
 import psycopg2
 import random
+from flask_login import current_user
+from .extensions import socketio, emit
 
 main = Blueprint("main", __name__)
 
+# PostgreSQL connection configuration
 conn = psycopg2.connect(
-    dbname="egzamin",
-    user="postgres",
-    password="root",
-    host="127.0.0.1",
-    port="5432"
-    )
+    host='localhost',
+    user='postgres',
+    password='root',
+    database='egzamin'
+)
 
 @main.route("/")
 def index():
     return render_template("index.html")
-
 
 @socketio.on("connect")
 def handle_connect():
@@ -27,42 +25,24 @@ def handle_connect():
 @socketio.on("user_join")
 def handle_user_join():
     print("User joined!")
-    id = random.randint(1, 1030)
-    cur = conn.cursor()
-    cur.execute("SELECT id, question_text, image_url, option_a, option_b, option_c, option_d FROM questions WHERE id = %s", (id,))
-    rows = cur.fetchone()
-    cur.close()
-    
-    row = {
-            'id': rows[0],
-            'question_text': rows[1],
-            'image_url': rows[2],
-            'option_a': rows[3],
-            'option_b': rows[4],
-            'option_c': rows[5],
-            'option_d': rows[6]
-        }
-    emit("get_question", row)
 
 @socketio.on("next_question")
 def handle_new_message():
-    id = random.randint(1, 1030)
-    cur = conn.cursor()
-    cur.execute("SELECT id, question_text, image_url, option_a, option_b, option_c, option_d FROM questions WHERE id = %s", (id,))
-    rows = cur.fetchone()
-    cur.close()
-    
-    row = {
-            'id': rows[0],
-            'question_text': rows[1],
-            'image_url': rows[2],
-            'option_a': rows[3],
-            'option_b': rows[4],
-            'option_c': rows[5],
-            'option_d': rows[6]
-        }
-    emit("get_question", row)
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT * FROM Questions ORDER BY RANDOM() LIMIT 1")  # Get a random question from the database
+        result = cursor.fetchone()
+
+    session["question_id"] = result[0]
+
+    socketio.emit("get_question", {"text": result[2], "a": result[4], "b": result[5], "c": result[6], "d": result[7]})
 
 @socketio.on("check_answer")
 def handle_new_message(data):
-    emit("check_complete", {"res":data=="B", "cor_res":"B", "your_ans":data})
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT * FROM Questions WHERE id = %s", (session["question_id"],))
+        result = cursor.fetchone()
+
+    correct_answer = result[8]
+
+    emit("check_complete", {"res": data == correct_answer, "cor_res": correct_answer, "your_ans": data})
+
