@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_session import Session
-from .routes import main, socketio
+from .test1 import main, socketio
 from .auth import *
 
 

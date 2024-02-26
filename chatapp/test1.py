@@ -1,18 +1,11 @@
 from flask import Blueprint, render_template, session, redirect, url_for, flash
-import psycopg2
 import random
 from flask_login import current_user
-from .extensions import socketio, emit
+from .extensions import socketio, emit, conn 
 
 main = Blueprint("main", __name__)
 
-# PostgreSQL connection configuration
-conn = psycopg2.connect(
-    host='localhost',
-    user='postgres',
-    password='root',
-    database='egzamin'
-)
+
 
 @main.route("/")
 def index():

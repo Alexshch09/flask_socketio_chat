@@ -1,17 +1,11 @@
 from flask import Blueprint, render_template, request, redirect, session, url_for, flash
 from werkzeug.security import generate_password_hash, check_password_hash
-import psycopg2
 from flask_login import current_user
+from .extensions import conn
 
 auth = Blueprint("auth", __name__)
 
 # PostgreSQL connection configuration
-conn = psycopg2.connect(
-    host='localhost',
-    user='postgres',
-    password='root',
-    database='egzamin'
-)
 
 @auth.route("/register", methods=["GET", "POST"])
 def register():
