@@ -2,6 +2,9 @@ from flask import Flask
 from flask_session import Session
 from .test1 import main, socketio
 from .auth import *
+from .stats import *
+from .list import *
+from .guides import *
 
 
 def create_app():
@@ -12,6 +15,9 @@ def create_app():
 
     app.register_blueprint(main) # Test (1 question)
     app.register_blueprint(auth) # Auth (Login/Register)
+    app.register_blueprint(stats)
+    app.register_blueprint(lists)
+    app.register_blueprint(guides)
 
     socketio.init_app(app) # Socket.io init
 

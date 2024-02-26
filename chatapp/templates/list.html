@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Answers list</title>
+</head>
+<body>
+    <h1>Answers list</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Exam</th>
+                <th>Text</th>
+                <th>Answer</th>
+                <th>Guide</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dat in data %}
+            <tr>
+                <td>{{ dat[0] }}</td>
+                <td>{{ dat[1] }}</td>
+                <td>{{ dat[2] }}</td>
+                <td>{{ dat[8] }}</td>
+                <td><a href="/guides/{{ dat[0] }}">View Guide</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

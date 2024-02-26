@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Stats</title>
+</head>
+<body>
+    <h1>User Stats</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>User ID</th>
+                <th>Exam ID</th>
+                <th>Question ID</th>
+                <th>Answer</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stat in stats %}
+            <tr>
+                <td>{{ stat[0] }}</td>
+                <td>{{ stat[1] }}</td>
+                <td>{{ stat[2] }}</td>
+                <td>{{ stat[3] }}</td>
+                <td>{{ stat[4] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

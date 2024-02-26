@@ -5,19 +5,18 @@
 # On check_answer request, gets an answer data from user (A|B|C|D) and compares it to the questions from database with id from session['question_id], and sends result to user
 
 from flask import Blueprint, render_template, session, redirect, url_for, flash
-from flask_login import current_user
 from .extensions import socketio, emit, conn 
 
-main = Blueprint("main", __name__)
+main = Blueprint("main", __name__) # Blueprint init
 
 # Main one question test class
 class Test_one:
     def __init__(self, theme):
-        self.theme = theme
+        self.theme = theme # 1 - INF02, 2 - INF03 (exam_id)
 
     def get_random_question(self):
         with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM Questions ORDER BY RANDOM() LIMIT 1")  # Get a random question from the database
+            cursor.execute("SELECT * FROM Questions WHERE exam_id = %s ORDER BY RANDOM() LIMIT 1", (self.theme,))  # Get a random question from the database
             result = cursor.fetchone() # Fetch one question
             session["question_id"] = result[0] # Saving current question id to session
 
@@ -28,8 +27,18 @@ class Test_one:
             cursor.execute("SELECT * FROM Questions WHERE id = %s", (session["question_id"],)) # Compare answer and correct answer from session["question_id"]
             result = cursor.fetchone() # Fetch one question
             correct_answer = result[8] # result[8] - correct_answer
+            self.stats_write(data) # Write statistics
 
-            return {"res": data == correct_answer, "cor_res": correct_answer, "your_ans": data}
+            return {"res": data == correct_answer, "cor_res": correct_answer, "your_ans": data} # Send res: True/False, cor_res: Correct answer, your_ans: user answer 
+    
+    def stats_write(self, data):
+        with conn.cursor() as cursor:
+            cursor.execute(
+                "INSERT INTO Stats (user_id, exam_id, quest_id, answer) VALUES (%s, %s, %s, %s)", 
+                            (session["user_id"], self.theme, session["question_id"], data,)) 
+                # Compare answer and correct answer from session["question_id"]
+            
+            conn.commit()
 
 
 
@@ -39,11 +48,15 @@ exam_id = 1 # Exam type: 1 - INF03, 2 - INF02
 test = Test_one(exam_id)
 
 
-
 # Main Page render
 @main.route("/")
 def index():
-    return render_template("index.html") # Now it`s a page with Start test button
+    if "user_id" not in session:
+        flash("You need to be logged in to access the test.", "error") # User is not logged
+        return redirect(url_for("auth.login"))
+    else:
+        # Render testing page
+        return render_template("index.html") # Now it`s a page with Start test button
 
 
 # Socket.io on Connect
@@ -66,5 +79,5 @@ def handle_new_message():
 # Handle answer check
 @socketio.on("check_answer")
 def handle_new_message(data):
-    socketio.emit("check_complete", test.check_user_answer(data)) # send res: True/False, cor_res: Correct answer, your_ans: user answer 
+    socketio.emit("check_complete", test.check_user_answer(data)) # Send res: True/False, cor_res: Correct answer, your_ans: user answer 
 

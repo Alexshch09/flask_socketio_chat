@@ -2,7 +2,7 @@
 # Takes data from template form and puts it to postgresql database
 # PostgreSQL connection in the extensions.py
 # Four methods:
-#   /register (gets data from form, checks if username is already taken< hashing password, and saves data to database (egzamin:user), after redirects user to login page)
+#   /register (gets data from form, checks if username is already taken, hashing password, and saves data to database (egzamin:user), after redirects user to login page)
 #   /login (gets data from form, checks if user exists, checks password, if correct redirects to dashboard, if false gets error, user id is stored in the session["user_id"])
 #   /dashboard (Checks if user_id exists, if true loads an dashboard, else redirects to login page)
 #   /logout (Deletes an user_id from session, redirects to the login page)
