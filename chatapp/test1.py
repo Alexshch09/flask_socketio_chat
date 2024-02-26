@@ -10,6 +10,35 @@ from .extensions import socketio, emit, conn
 
 main = Blueprint("main", __name__)
 
+# Main one question test class
+class Test_one:
+    def __init__(self, theme):
+        self.theme = theme
+
+    def get_random_question(self):
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM Questions ORDER BY RANDOM() LIMIT 1")  # Get a random question from the database
+            result = cursor.fetchone() # Fetch one question
+            session["question_id"] = result[0] # Saving current question id to session
+
+            return {"text": result[2], "a": result[4], "b": result[5], "c": result[6], "d": result[7]} # Return question data
+    
+    def check_user_answer(self, data):
+        with conn.cursor() as cursor:
+            cursor.execute("SELECT * FROM Questions WHERE id = %s", (session["question_id"],)) # Compare answer and correct answer from session["question_id"]
+            result = cursor.fetchone() # Fetch one question
+            correct_answer = result[8] # result[8] - correct_answer
+
+            return {"res": data == correct_answer, "cor_res": correct_answer, "your_ans": data}
+
+
+
+exam_id = 1 # Exam type: 1 - INF03, 2 - INF02
+
+# Creating an instance of the Test class
+test = Test_one(exam_id)
+
+
 
 # Main Page render
 @main.route("/")
@@ -31,23 +60,11 @@ def handle_user_join():
 # Handle next question
 @socketio.on("next_question")
 def handle_new_message():
-    with conn.cursor() as cursor:
-        cursor.execute("SELECT * FROM Questions ORDER BY RANDOM() LIMIT 1")  # Get a random question from the database
-        result = cursor.fetchone() # Fetch one question
-
-    session["question_id"] = result[0] # Saving current question id to session
-
-    socketio.emit("get_question", {"text": result[2], "a": result[4], "b": result[5], "c": result[6], "d": result[7]}) # Send question
+    socketio.emit("get_question", test.get_random_question()) # Send question
 
 
 # Handle answer check
 @socketio.on("check_answer")
 def handle_new_message(data):
-    with conn.cursor() as cursor:
-        cursor.execute("SELECT * FROM Questions WHERE id = %s", (session["question_id"],)) # Compare answer and correct answer from session["question_id"]
-        result = cursor.fetchone() # Fetch one question
-
-    correct_answer = result[8] # result[8] - correct_answer
-
-    emit("check_complete", {"res": data == correct_answer, "cor_res": correct_answer, "your_ans": data}) # send res: True/False, cor_res: Correct answer, your_ans: user answer 
+    socketio.emit("check_complete", test.check_user_answer(data)) # send res: True/False, cor_res: Correct answer, your_ans: user answer 
 

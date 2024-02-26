@@ -1,7 +1,7 @@
 # Authentication module for flask_test project
 # Takes data from template form and puts it to postgresql database
 # PostgreSQL connection in the extensions.py
-# Four methods: 
+# Four methods:
 #   /register (gets data from form, checks if username is already taken< hashing password, and saves data to database (egzamin:user), after redirects user to login page)
 #   /login (gets data from form, checks if user exists, checks password, if correct redirects to dashboard, if false gets error, user id is stored in the session["user_id"])
 #   /dashboard (Checks if user_id exists, if true loads an dashboard, else redirects to login page)
@@ -19,14 +19,16 @@ auth = Blueprint("auth", __name__)
 @auth.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        username = request.form.get("username") # username from form
-        password = request.form.get("password") # password from form
+        username = request.form.get("username")  # username from form
+        password = request.form.get("password")  # password from form
 
         # Check if username is already taken
         with conn.cursor() as cursor:
             cursor.execute("SELECT * FROM users WHERE login = %s", (username,))
             if cursor.fetchone():
-                flash("Username already exists. Please choose a different one.", "error")
+                flash(
+                    "Username already exists. Please choose a different one.", "error"
+                )
                 return redirect(url_for("auth.register"))
 
         # Hash the password
@@ -34,14 +36,17 @@ def register():
 
         # Save the user to the database
         with conn.cursor() as cursor:
-            cursor.execute("INSERT INTO users (login, password, email, nickname) VALUES (%s, %s, %s, %s)", (username, hashed_password, "test@test.com", "nickname"))
+            cursor.execute(
+                "INSERT INTO users (login, password, email, nickname) VALUES (%s, %s, %s, %s)",
+                (username, hashed_password, "test@test.com", "nickname"),
+            )
             conn.commit()
 
         # Registration succesfull
 
         flash("Registration successful. You can now log in.", "success")
         return redirect(url_for("auth.login"))
-    
+
     # Render Registration Page
     return render_template("register.html")
 
@@ -50,12 +55,14 @@ def register():
 @auth.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        username = request.form.get("username") # username from form
-        password = request.form.get("password") # password from form
+        username = request.form.get("username")  # username from form
+        password = request.form.get("password")  # password from form
 
         # Retrieve user from the database
         with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM users WHERE login = %s", (username,)) # Check username
+            cursor.execute(
+                "SELECT * FROM users WHERE login = %s", (username,)
+            )  # Check username
             user = cursor.fetchone()
 
         if user and check_password_hash(user[2], password):

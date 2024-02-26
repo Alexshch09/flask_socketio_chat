@@ -1,4 +1,4 @@
-# Script for local html parsing. Parsing of questions
+# Script for local html parsing. Parsing of questions. Isn't used in main application. Only an service program for updating database.
 # Uses data from https://www.praktycznyegzamin.pl/inf03ee09e14/teoria/wszystko/
 
 import psycopg2
