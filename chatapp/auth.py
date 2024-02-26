@@ -31,7 +31,7 @@ def register():
 
         # Save the user to the database
         with conn.cursor() as cursor:
-            cursor.execute("INSERT INTO users (login, password) VALUES (%s, %s)", (username, hashed_password))
+            cursor.execute("INSERT INTO users (login, password, email, nickname) VALUES (%s, %s, %s, %s)", (username, hashed_password, "test@test.com", "nickname"))
             conn.commit()
 
         flash("Registration successful. You can now log in.", "success")
@@ -52,7 +52,7 @@ def login():
         if user and check_password_hash(user[2], password):
             session["user_id"] = user[0]  # Store user id in session
             flash("Login successful!", "success")
-            return redirect(url_for("main.dashboard"))
+            return redirect(url_for("auth.dashboard"))
         else:
             flash("Invalid username or password. Please try again.", "error")
 
