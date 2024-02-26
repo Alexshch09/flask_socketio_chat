@@ -6,15 +6,15 @@ from .auth import *
 
 def create_app():
     app = Flask(__name__)
-    app.config["DEBUG"] = True
-    app.config["SECRET_KEY"] = "secret"
-    app.config["SESSION_TYPE"] = "filesystem"  # You can change this as needed
+    app.config["DEBUG"] = True # Enable debug
+    app.config["SECRET_KEY"] = "secret" # Secret key
+    app.config["SESSION_TYPE"] = "filesystem"  # Storage for sessions
 
-    app.register_blueprint(main)
-    app.register_blueprint(auth)
+    app.register_blueprint(main) # Test (1 question)
+    app.register_blueprint(auth) # Auth (Login/Register)
 
-    socketio.init_app(app)
+    socketio.init_app(app) # Socket.io init
 
-    Session(app)
+    Session(app) # Sessions init
 
-    return app
+    return app # Send app
