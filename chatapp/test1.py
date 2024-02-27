@@ -6,6 +6,7 @@
 
 from flask import Blueprint, render_template, session, redirect, url_for, flash
 from .extensions import socketio, emit, conn 
+import markdown2
 
 main = Blueprint("main", __name__) # Blueprint init
 
@@ -84,3 +85,34 @@ def handle_new_message():
 @socketio.on("check_answer")
 def handle_new_message(data):
     socketio.emit("check_complete", test.check_user_answer(data)) # Send res: True/False, cor_res: Correct answer, your_ans: user answer 
+
+@socketio.on("send_stats")
+def handle_stats():
+    user_id = session["user_id"]
+        
+    # Execute SQL query to retrieve stats for the current user
+    query = "SELECT user_id, exam_id, quest_id, answer FROM Stats WHERE user_id = %s AND quest_id = %s;"
+
+    with conn.cursor() as cursor:
+        cursor.execute(query, (user_id, session["question_id"],))
+        stat_of_id = cursor.fetchone()
+
+        data = [stat_of_id[1],stat_of_id[2],stat_of_id[3],]
+        print(data)
+    
+    socketio.emit("get_stats", data)
+
+
+@socketio.on("send_guide")
+def handle_guide():
+    query = "SELECT * FROM Guides WHERE question_id = %s;"
+    
+    with conn.cursor() as cursor:
+        cursor.execute(query, (2,))
+        guide = cursor.fetchall()
+        
+    # Assuming guide is a tuple containing dictionaries, access the first element of the tuple
+    guide_text = markdown2.markdown(guide[0][2])
+
+    # Render the template and pass the converted HTML
+    socketio.emit("get_guide", guide_text)

@@ -49,12 +49,12 @@
                 <div class="row">
                     <div class="col">
                         <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                            data-bs-target="#stats-modal">
+                            data-bs-target="#stats-modal" onclick="stats_get()">
                             Stats
                         </button>
                         <button id="next_q" class="btn btn-primary" onclick="next_question();">Next Question</button>
                         <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                            data-bs-target="#guide-modal">
+                            data-bs-target="#guide-modal" onclick="guide_get()">
                             Guide
                         </button>
                     </div>
@@ -115,7 +115,7 @@
 
         function connect() {
             if (!isConnected) {
-                socket.connect('http://localhost');
+                socket.connect();
                 isConnected = true;
                 console.log("test2");
 
@@ -141,6 +141,25 @@
         function next_question() {
             socket.emit("next_question");
         }
+
+
+        function stats_get() {
+            socket.emit("send_stats");
+        }
+
+        socket.on("get_stats", function (data) {
+            console.log(data);
+        })
+
+
+        function guide_get() {
+            socket.emit("send_guide");
+        }
+
+        socket.on("get_guide", function (data) {
+            console.log(data);
+        })
+
 
         socket.on("get_question", function (data) {
             document.getElementById("result").style.display = "none";
