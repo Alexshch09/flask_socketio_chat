@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, session, redirect, url_for, flash
-from .extensions import socketio, emit, conn 
+from .extensions import conn 
 
 stats = Blueprint("stats", __name__) # Blueprint init
 

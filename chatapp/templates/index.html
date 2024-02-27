@@ -22,35 +22,34 @@
             display: none;
         }
     </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body>
 
-    <button id="test_start">Start Test</button>
+    <button id="test_start" class="btn btn-primary">Start Test</button>
 
-    <div class="container" id="container">
-        <center>
+    <div class="container mt-5" id="container">
+        <div class="text-center">
 
             <p id="question_text"></p> <br><br>
 
-            <div id="image_container">
-                <img src="">
+            <div id="image_container" class="mb-3">
+                <img src="" class="img-fluid">
             </div> <br>
 
-            <button id="a_text" onclick="check('A');">A</button><br><br>
-            <button id="b_text" onclick="check('B');">B</button><br><br>
-            <button id="c_text" onclick="check('C');">C</button><br><br>
-            <button id="d_text" onclick="check('D');">D</button><br><br>
+            <button id="a_text" class="btn btn-secondary" onclick="check('A');">A</button><br><br>
+            <button id="b_text" class="btn btn-secondary" onclick="check('B');">B</button><br><br>
+            <button id="c_text" class="btn btn-secondary" onclick="check('C');">C</button><br><br>
+            <button id="d_text" class="btn btn-secondary" onclick="check('D');">D</button><br><br>
 
-            <br><br>
-
-            <p id="result"></p>
+            <p id="result" class="mt-3"></p>
 
             <br><br><br>
 
-            <button id="next_q" onclick="next_question();">Next Question</button>
+            <button id="next_q" class="btn btn-primary" onclick="next_question();">Next Question</button>
 
-        </center>
+        </div>
     </div>
 
     <script>
