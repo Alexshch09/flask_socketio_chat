@@ -20,7 +20,7 @@ class Test_one:
             result = cursor.fetchone() # Fetch one question
             session["question_id"] = result[0] # Saving current question id to session
 
-            return {"text": result[2], "a": result[4], "b": result[5], "c": result[6], "d": result[7]} # Return question data
+            return {"id": result[0], "text": result[2], "a": result[4], "b": result[5], "c": result[6], "d": result[7]} # Return question data
     
     def check_user_answer(self, data):
         with conn.cursor() as cursor:
@@ -64,6 +64,10 @@ def index():
 def handle_connect():
     print("Client connected!")
 
+@socketio.on('disconnect')
+def test_disconnect():
+    print('Client disconnected')
+
 # Socket.io on User Joins
 @socketio.on("user_join")
 def handle_user_join():
@@ -80,4 +84,3 @@ def handle_new_message():
 @socketio.on("check_answer")
 def handle_new_message(data):
     socketio.emit("check_complete", test.check_user_answer(data)) # Send res: True/False, cor_res: Correct answer, your_ans: user answer 
-

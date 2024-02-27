@@ -16,6 +16,7 @@
                     <th>Exam</th>
                     <th>Text</th>
                     <th>Answer</th>
+                    <th>Your Stats</th>
                     <th>Guide</th>
                 </tr>
             </thead>
@@ -26,6 +27,7 @@
                     <td>{{ dat[1] }}</td>
                     <td>{{ dat[2] }}</td>
                     <td>{{ dat[8] }}</td>
+                    <td><a href="/stat/{{ dat[0] }}" class="btn btn-primary">View Stats</a></td>
                     <td><a href="/guides/{{ dat[0] }}" class="btn btn-primary">View Guide</a></td>
                 </tr>
                 {% endfor %}

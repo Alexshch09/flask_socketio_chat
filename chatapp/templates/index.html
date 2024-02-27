@@ -6,9 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flask-SocketIO Example</title>
-    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"
-        integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
-        crossorigin="anonymous"></script>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.js"></script>
     <style>
         #container {
             display: none;
@@ -47,25 +45,94 @@
 
             <br><br><br>
 
-            <button id="next_q" class="btn btn-primary" onclick="next_question();">Next Question</button>
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                            data-bs-target="#stats-modal">
+                            Stats
+                        </button>
+                        <button id="next_q" class="btn btn-primary" onclick="next_question();">Next Question</button>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                            data-bs-target="#guide-modal">
+                            Guide
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal -->
+            <div class="modal fade" id="stats-modal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            This is the content of the modal. You can put any HTML content here.
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary">Save changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal -->
+            <div class="modal fade" id="guide-modal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            This is the content of the modal. You can put any HTML content here.
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary">Save changes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
 
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+
     <script>
-        const socket = io({ autoConnect: false });
+        let isConnected = false;
+        const socket = io();
+
+        function connect() {
+            if (!isConnected) {
+                socket.connect('http://localhost');
+                isConnected = true;
+                console.log("test2");
+
+                socket.on("connect", function () {
+                    socket.emit("user_join");
+                    console.log("test3");
+                });
+            }
+        }
+
 
         document.getElementById("test_start").addEventListener("click", function () {
-
-            socket.connect();
-
-            socket.on("connect", function () {
-                socket.emit("user_join");
-            })
+            connect();
 
             document.getElementById("test_start").style.display = "none";
             document.getElementById("container").style.display = "block";
-        })
+        });
 
         function check(answer) {
             socket.emit("check_answer", answer);
@@ -103,13 +170,13 @@
             document.getElementById("c_text").disabled = true;
             document.getElementById("d_text").disabled = true;
 
-            a = {"A": "a_text", "B": "b_text", "C": "c_text", "D": "d_text"}
+            a = { "A": "a_text", "B": "b_text", "C": "c_text", "D": "d_text" }
 
             if (data.res) {
                 document.getElementById("result").innerText = "Correct";
                 document.getElementById(a[data.cor_res]).style = "background: green";
             } else {
-                document.getElementById("result").innerText = "Несorrect!!! Учись дальше!";
+                document.getElementById("result").innerText = "Incorrect!!! Keep learning!";
             }
             console.log(data);
         })
