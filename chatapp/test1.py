@@ -96,16 +96,17 @@ def handle_stats():
     with conn.cursor() as cursor:
         cursor.execute(query, (user_id, session["question_id"],))
         stat_of_id = cursor.fetchone()
-
-        data = [stat_of_id[1],stat_of_id[2],stat_of_id[3],]
-        print(data)
     
-    socketio.emit("get_stats", data)
+    if stat_of_id:
+        data = [stat_of_id[1],stat_of_id[2],stat_of_id[3],]
+        socketio.emit("get_stats", data)
+    else:
+        socketio.emit("get_stats_none")
 
 
 @socketio.on("send_guide")
 def handle_guide():
-    query = "SELECT * FROM Guides WHERE question_id = %s;"
+    query = "SELECT * FROM Guides WHERE question_id = %s LIMIT 1;"
     
     with conn.cursor() as cursor:
         cursor.execute(query, (2,))

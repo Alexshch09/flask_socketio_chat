@@ -70,8 +70,8 @@
                             <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body">
-                            This is the content of the modal. You can put any HTML content here.
+                        <div class="modal-body" id="stats-container">
+                            
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -90,8 +90,8 @@
                             <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body">
-                            This is the content of the modal. You can put any HTML content here.
+                        <div class="modal-body" id="guide-container">
+                            
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -148,7 +148,11 @@
         }
 
         socket.on("get_stats", function (data) {
-            console.log(data);
+            document.getElementById("stats-container").innerHTML = data;
+        })
+
+        socket.on("get_stats_none", function () {
+            document.getElementById("stats-container").innerHTML = "No Data!";
         })
 
 
@@ -158,6 +162,7 @@
 
         socket.on("get_guide", function (data) {
             console.log(data);
+            document.getElementById("guide-container").innerHTML = data;
         })
 
 
