@@ -23,7 +23,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
-<body>
+<body data-bs-theme="dark">
 
     <button id="test_start" class="btn btn-primary">Start Test</button>
 
@@ -36,10 +36,10 @@
                 <img src="" class="img-fluid">
             </div> <br>
 
-            <button id="a_text" class="btn btn-secondary" onclick="check('A');">A</button><br><br>
-            <button id="b_text" class="btn btn-secondary" onclick="check('B');">B</button><br><br>
-            <button id="c_text" class="btn btn-secondary" onclick="check('C');">C</button><br><br>
-            <button id="d_text" class="btn btn-secondary" onclick="check('D');">D</button><br><br>
+            <button id="a_text" class="btn btn-dark border" onclick="check('A');">A</button><br><br>
+            <button id="b_text" class="btn btn-dark border" onclick="check('B');">B</button><br><br>
+            <button id="c_text" class="btn btn-dark border" onclick="check('C');">C</button><br><br>
+            <button id="d_text" class="btn btn-dark border" onclick="check('D');">D</button><br><br>
 
             <p id="result" class="mt-3"></p>
 
@@ -71,7 +71,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body" id="stats-container">
-                            
+
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -91,7 +91,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body" id="guide-container">
-                            
+
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -110,20 +110,17 @@
         crossorigin="anonymous"></script>
 
     <script>
-        let isConnected = false;
         const socket = io();
 
         function connect() {
-            if (!isConnected) {
-                socket.connect();
-                isConnected = true;
-                console.log("test2");
+            socket.connect();
 
-                socket.on("connect", function () {
-                    socket.emit("user_join");
-                    console.log("test3");
-                });
-            }
+            socket.on("connect", function () {
+                socket.emit("user_join");
+                console.log("test3");
+            });
+
+            next_question();
         }
 
 
@@ -171,25 +168,27 @@
 
 
         socket.on("get_question", function (data) {
-            document.getElementById("result").style.display = "none";
-            document.getElementById("a_text").disabled = false;
-            document.getElementById("b_text").disabled = false;
-            document.getElementById("c_text").disabled = false;
-            document.getElementById("d_text").disabled = false;
-
             document.getElementById("a_text").style = "";
             document.getElementById("b_text").style = "";
             document.getElementById("c_text").style = "";
             document.getElementById("d_text").style = "";
 
-            document.getElementById("question_text").innerText = data.text;
+            setTimeout(() => {
+                document.getElementById("result").style.display = "none";
 
-            document.getElementById("a_text").innerText = data.a;
-            document.getElementById("b_text").innerText = data.b;
-            document.getElementById("c_text").innerText = data.c;
-            document.getElementById("d_text").innerText = data.d;
+                document.getElementById("a_text").disabled = false;
+                document.getElementById("b_text").disabled = false;
+                document.getElementById("c_text").disabled = false;
+                document.getElementById("d_text").disabled = false;
 
-        })
+                document.getElementById("question_text").innerText = data.text;
+
+                document.getElementById("a_text").innerText = data.a;
+                document.getElementById("b_text").innerText = data.b;
+                document.getElementById("c_text").innerText = data.c;
+                document.getElementById("d_text").innerText = data.d;
+            }, 110);
+        });
 
         socket.on("check_complete", function (data) {
             document.getElementById("result").style.display = "block";
@@ -204,10 +203,13 @@
                 document.getElementById("result").innerText = "Correct";
                 document.getElementById(a[data.cor_res]).style = "background: green";
             } else {
+                document.getElementById(a[data.cor_res]).style = "background: green";
+                document.getElementById(a[data.your_ans]).style = "background: red";
                 document.getElementById("result").innerText = "Incorrect!!! Keep learning!";
             }
             console.log(data);
         })
+
     </script>
 </body>
 

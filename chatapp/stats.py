@@ -24,7 +24,7 @@ def index():
 
 @stats.route("/stat/<int:id>")
 def one_stat(id):
-    user_id = session["user_id"]
+    user_id = session["user_id"] 
         
     # Execute SQL query to retrieve stats for the current user
     query = "SELECT user_id, exam_id, quest_id, answer, date FROM Stats WHERE user_id = %s AND quest_id = %s;"

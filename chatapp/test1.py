@@ -50,14 +50,14 @@ test = Test_one(exam_id)
 
 
 # Main Page render
-@main.route("/")
+@main.route("/test")
 def index():
     if "user_id" not in session:
         flash("You need to be logged in to access the test.", "error") # User is not logged
         return redirect(url_for("auth.login"))
     else:
         # Render testing page
-        return render_template("index.html") # Now it`s a page with Start test button
+        return render_template("test1.html") # Now it`s a page with Start test button
 
 
 # Socket.io on Connect
@@ -103,7 +103,9 @@ def handle_stats():
         for a in stat_of_id:
             b = [a[0],a[1]]
             data.append(b)
+
         socketio.emit("get_stats", data)
+
     else:
         socketio.emit("get_stats_none")
 
