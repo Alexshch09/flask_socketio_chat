@@ -91,14 +91,18 @@ def handle_stats():
     user_id = session["user_id"]
         
     # Execute SQL query to retrieve stats for the current user
-    query = "SELECT s.answer, q.correct_answer AS question_text FROM Stats s JOIN Questions q ON s.quest_id = q.id WHERE s.user_id = %s AND s.quest_id = %s;"
+    query = "SELECT s.answer, q.correct_answer, s.date AS question_text FROM Stats s JOIN Questions q ON s.quest_id = q.id WHERE s.user_id = %s AND s.quest_id = %s ORDER BY date DESC;"
 
     with conn.cursor() as cursor:
-        cursor.execute(query, (user_id, session["question_id"],))
-        stat_of_id = cursor.fetchone()
-    
+        cursor.execute(query, (user_id, 4,))
+        stat_of_id = cursor.fetchall()
+
+    data = []
+
     if stat_of_id:
-        data = [stat_of_id[0],stat_of_id[1],]
+        for a in stat_of_id:
+            b = [a[0],a[1]]
+            data.append(b)
         socketio.emit("get_stats", data)
     else:
         socketio.emit("get_stats_none")
