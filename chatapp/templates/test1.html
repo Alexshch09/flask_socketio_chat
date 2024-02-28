@@ -25,7 +25,14 @@
 
 <body data-bs-theme="dark">
 
-    <button id="test_start" class="btn btn-primary">Start Test</button>
+    <div class="container" id="test_start_container">
+        <div class="row" style="margin-top: 25vh;">
+            <div class="col-12 text-center">
+                <button id="test_start" class="btn btn-primary">Start Test</button>
+            </div>
+        </div>
+    </div>
+
 
     <div class="container mt-5" id="container">
         <div class="text-center">
@@ -128,6 +135,7 @@
             connect();
 
             document.getElementById("test_start").style.display = "none";
+            document.getElementById("test_start_container").style.display = "none";
             document.getElementById("container").style.display = "block";
         });
 
