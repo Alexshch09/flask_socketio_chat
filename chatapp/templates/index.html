@@ -165,6 +165,10 @@
             document.getElementById("guide-container").innerHTML = data;
         })
 
+        socket.on("get_guide_none", function () {
+            document.getElementById("guide-container").innerHTML = "There is no guides for this question";
+        })
+
 
         socket.on("get_question", function (data) {
             document.getElementById("result").style.display = "none";

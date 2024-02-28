@@ -91,17 +91,18 @@ def handle_stats():
     user_id = session["user_id"]
         
     # Execute SQL query to retrieve stats for the current user
-    query = "SELECT user_id, exam_id, quest_id, answer FROM Stats WHERE user_id = %s AND quest_id = %s;"
+    query = "SELECT s.answer, q.correct_answer AS question_text FROM Stats s JOIN Questions q ON s.quest_id = q.id WHERE s.user_id = %s AND s.quest_id = %s;"
 
     with conn.cursor() as cursor:
         cursor.execute(query, (user_id, session["question_id"],))
         stat_of_id = cursor.fetchone()
     
     if stat_of_id:
-        data = [stat_of_id[1],stat_of_id[2],stat_of_id[3],]
+        data = [stat_of_id[0],stat_of_id[1],]
         socketio.emit("get_stats", data)
     else:
         socketio.emit("get_stats_none")
+
 
 
 @socketio.on("send_guide")
@@ -109,11 +110,11 @@ def handle_guide():
     query = "SELECT * FROM Guides WHERE question_id = %s LIMIT 1;"
     
     with conn.cursor() as cursor:
-        cursor.execute(query, (2,))
+        cursor.execute(query, (session["question_id"],))
         guide = cursor.fetchall()
-        
-    # Assuming guide is a tuple containing dictionaries, access the first element of the tuple
-    guide_text = markdown2.markdown(guide[0][2])
 
-    # Render the template and pass the converted HTML
-    socketio.emit("get_guide", guide_text)
+    if guide:
+        guide_text = markdown2.markdown(guide[0][2])
+        socketio.emit("get_guide", guide_text)
+    else:
+        socketio.emit("get_guide_none")
