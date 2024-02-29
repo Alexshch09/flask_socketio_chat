@@ -5,6 +5,7 @@ from .auth import *
 from .stats import *
 from .list import *
 from .guides import *
+from .main_page import *
 
 
 def create_app():
@@ -18,6 +19,7 @@ def create_app():
     app.register_blueprint(stats)
     app.register_blueprint(lists)
     app.register_blueprint(guides)
+    app.register_blueprint(lending)
 
     socketio.init_app(app) # Socket.io init
 
