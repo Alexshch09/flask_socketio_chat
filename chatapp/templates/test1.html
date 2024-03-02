@@ -248,6 +248,10 @@
             }
         });
 
+        socket.on("reload_page", function (url) {
+            window.location.href = url;
+        });
+
 
     </script>
 </body>

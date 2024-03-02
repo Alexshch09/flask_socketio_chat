@@ -1,12 +1,7 @@
-# One question test module for flask_test project
-# On load render test page and creating an socket.io connection
-# PostgreSQL connection in the extensions.py
-# On next_question request choses an random question from database, saves session["question_id"] to user session and sends an question data to user
-# On check_answer request, gets an answer data from user (A|B|C|D) and compares it to the questions from database with id from session['question_id], and sends result to user
-
-from flask import Blueprint, render_template, session, redirect, url_for, flash
-from .extensions import socketio, emit, conn 
+from flask import Blueprint, render_template, session, redirect, url_for, flash, request
+from .extensions import socketio, emit, conn
 import markdown2
+from psycopg2 import OperationalError  # Import OperationalError from psycopg2
 
 main = Blueprint("main", __name__) # Blueprint init
 
@@ -16,35 +11,43 @@ class Test_one:
         self.theme = theme # 1 - INF02, 2 - INF03 (exam_id)
 
     def get_random_question(self):
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM Questions WHERE exam_id = %s ORDER BY RANDOM() LIMIT 1", (self.theme,))  # Get a random question from the database
-            result = cursor.fetchone() # Fetch one question
-            session["question_id"] = result[0] # Saving current question id to session
-            session["question_answered"] = False # Question isnt answered
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT * FROM Questions WHERE exam_id = %s ORDER BY RANDOM() LIMIT 1", (self.theme,))
+                result = cursor.fetchone()
+                session["question_id"] = result[0]
+                session["question_answered"] = False
 
-            return {"id": result[0], "text": result[2], "a": result[4], "b": result[5], "c": result[6], "d": result[7]} # Return question data
-    
+                return {"id": result[0], "text": result[2], "a": result[4], "b": result[5], "c": result[6], "d": result[7]}
+        except OperationalError as e:  # Handle database connection errors
+            print("Database error:", e)
+            return None
+
     def check_user_answer(self, data):
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT * FROM Questions WHERE id = %s", (session["question_id"],)) # Compare answer and correct answer from session["question_id"]
-            result = cursor.fetchone() # Fetch one question
-            correct_answer = result[8] # result[8] - correct_answer
-            self.stats_write(data) # Write statistics
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT * FROM Questions WHERE id = %s", (session["question_id"],))
+                result = cursor.fetchone()
+                correct_answer = result[8]
+                self.stats_write(data)
 
-            return {"res": data == correct_answer, "cor_res": correct_answer, "your_ans": data} # Send res: True/False, cor_res: Correct answer, your_ans: user answer 
-    
+                return {"res": data == correct_answer, "cor_res": correct_answer, "your_ans": data}
+        except OperationalError as e:
+            print("Database error:", e)
+            return None
+
     def stats_write(self, data):
-        with conn.cursor() as cursor:
-            cursor.execute(
-                "INSERT INTO Stats (user_id, exam_id, quest_id, answer) VALUES (%s, %s, %s, %s)", 
-                            (session["user_id"], self.theme, session["question_id"], data,)) 
-                # Compare answer and correct answer from session["question_id"]
-            
-            conn.commit()
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    "INSERT INTO Stats (user_id, exam_id, quest_id, answer) VALUES (%s, %s, %s, %s)",
+                    (session["user_id"], self.theme, session["question_id"], data,))
+                conn.commit()
+        except OperationalError as e:
+            print("Database error:", e)
 
 
-
-exam_id = 1 # Exam type: 1 - INF03, 2 - INF02
+exam_id = 1  # Exam type: 1 - INF03, 2 - INF02
 
 # Creating an instance of the Test class
 test = Test_one(exam_id)
@@ -54,11 +57,10 @@ test = Test_one(exam_id)
 @main.route("/test")
 def index():
     if "user_id" not in session:
-        flash("You need to be logged in to access the test.", "error") # User is not logged
+        flash("You need to be logged in to access the test.", "error")
         return redirect(url_for("auth.login"))
     else:
-        # Render testing page
-        return render_template("test1.html") # Now it`s a page with Start test button
+        return render_template("test1.html")
 
 
 # Socket.io on Connect
@@ -74,53 +76,77 @@ def test_disconnect():
 # Handle next question
 @socketio.on("next_question")
 def handle_new_message():
-    socketio.emit("get_question", test.get_random_question()) # Send question
+    question = test.get_random_question()
+    if question:
+        socketio.emit("get_question", question)
+    else:
+        socketio.emit("some_problem", "Error occurred while fetching question from the database")
 
 
 # Handle answer check
 @socketio.on("check_answer")
 def handle_new_message(data):
-    if session["question_answered"] == False:
-        session["question_answered"] = True
-        socketio.emit("check_complete", test.check_user_answer(data)) # Send res: True/False, cor_res: Correct answer, your_ans: user answer 
+    if "question_answered" in session and "question_id" in session:
+        if session["question_answered"] == False:
+            session["question_answered"] = True
+            result = test.check_user_answer(data)
+            if result:
+                socketio.emit("check_complete", result)
+            else:
+                socketio.emit("some_problem", "Error occurred while checking answer")
+        else:
+            socketio.emit("some_problem", "Question has already been answered")
     else:
-        socketio.emit("some_problem", "There is some problem on server. Incident was reported to admin. Pls reload the page and try again.") # Question already answered
+        socketio.emit("reload_page", request.referrer)
 
+# Send Stats to user
 @socketio.on("send_stats")
 def handle_stats():
-    user_id = session["user_id"]
-        
-    # Execute SQL query to retrieve stats for the current user
-    query = "SELECT s.answer, q.correct_answer, s.date AS question_text FROM Stats s JOIN Questions q ON s.quest_id = q.id WHERE s.user_id = %s AND s.quest_id = %s ORDER BY date DESC;"
+    try:
+        if "question_answered" in session and "question_id" in session:
+            user_id = session["user_id"]
+            query = "SELECT s.answer, q.correct_answer, s.date AS question_text FROM Stats s JOIN Questions q ON s.quest_id = q.id WHERE s.user_id = %s AND s.quest_id = %s ORDER BY date DESC;"
 
-    with conn.cursor() as cursor:
-        cursor.execute(query, (user_id, session["question_id"],))
-        stat_of_id = cursor.fetchall()
+            with conn.cursor() as cursor:
+                cursor.execute(query, (user_id, session["question_id"],))
+                stat_of_id = cursor.fetchall()
 
-    data = []
+            data = []
 
-    if stat_of_id:
-        for a in stat_of_id:
-            b = [a[0],a[1]]
-            data.append(b)
+            if stat_of_id:
+                for a in stat_of_id:
+                    b = [a[0], a[1]]
+                    data.append(b)
 
-        socketio.emit("get_stats", data)
+                socketio.emit("get_stats", data)
+            else:
+                socketio.emit("get_stats_none")
+        else:
+            socketio.emit("reload_page", request.referrer)
 
-    else:
-        socketio.emit("get_stats_none")
-
+    except OperationalError as e:
+        print("Database error:", e)
+        socketio.emit("some_problem", "Error occurred while fetching stats")
 
 
 @socketio.on("send_guide")
 def handle_guide():
-    query = "SELECT * FROM Guides WHERE question_id = %s LIMIT 1;"
-    
-    with conn.cursor() as cursor:
-        cursor.execute(query, (session["question_id"],))
-        guide = cursor.fetchall()
+    try:
+        if "question_answered" in session and "question_id" in session:
+            query = "SELECT * FROM Guides WHERE question_id = %s LIMIT 1;"
 
-    if guide:
-        guide_text = markdown2.markdown(guide[0][2])
-        socketio.emit("get_guide", guide_text)
-    else:
-        socketio.emit("get_guide_none")
+            with conn.cursor() as cursor:
+                cursor.execute(query, (session["question_id"],))
+                guide = cursor.fetchall()
+
+            if guide:
+                guide_text = markdown2.markdown(guide[0][2])
+                socketio.emit("get_guide", guide_text)
+            else:
+                socketio.emit("get_guide_none")
+        else:
+            socketio.emit("reload_page", request.referrer)
+            
+    except OperationalError as e:
+        print("Database error:", e)
+        socketio.emit("some_problem", "Error occurred while fetching guide")
