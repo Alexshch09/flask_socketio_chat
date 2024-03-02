@@ -20,6 +20,7 @@ class Test_one:
             cursor.execute("SELECT * FROM Questions WHERE exam_id = %s ORDER BY RANDOM() LIMIT 1", (self.theme,))  # Get a random question from the database
             result = cursor.fetchone() # Fetch one question
             session["question_id"] = result[0] # Saving current question id to session
+            session["question_answered"] = False # Question isnt answered
 
             return {"id": result[0], "text": result[2], "a": result[4], "b": result[5], "c": result[6], "d": result[7]} # Return question data
     
@@ -69,11 +70,6 @@ def handle_connect():
 def test_disconnect():
     print('Client disconnected')
 
-# Socket.io on User Joins
-@socketio.on("user_join")
-def handle_user_join():
-    print("User joined!")
-
 
 # Handle next question
 @socketio.on("next_question")
@@ -84,7 +80,11 @@ def handle_new_message():
 # Handle answer check
 @socketio.on("check_answer")
 def handle_new_message(data):
-    socketio.emit("check_complete", test.check_user_answer(data)) # Send res: True/False, cor_res: Correct answer, your_ans: user answer 
+    if session["question_answered"] == False:
+        session["question_answered"] = True
+        socketio.emit("check_complete", test.check_user_answer(data)) # Send res: True/False, cor_res: Correct answer, your_ans: user answer 
+    else:
+        socketio.emit("some_problem", "There is some problem on server. Incident was reported to admin. Pls reload the page and try again.") # Question already answered
 
 @socketio.on("send_stats")
 def handle_stats():
@@ -94,7 +94,7 @@ def handle_stats():
     query = "SELECT s.answer, q.correct_answer, s.date AS question_text FROM Stats s JOIN Questions q ON s.quest_id = q.id WHERE s.user_id = %s AND s.quest_id = %s ORDER BY date DESC;"
 
     with conn.cursor() as cursor:
-        cursor.execute(query, (user_id, 4,))
+        cursor.execute(query, (user_id, session["question_id"],))
         stat_of_id = cursor.fetchall()
 
     data = []

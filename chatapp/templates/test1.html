@@ -37,7 +37,7 @@
     <div class="container mt-5" id="container">
         <div class="text-center">
 
-            <p id="question_text"></p> <br><br>
+            <p id="question_text" style="user-select: none;"></p> <br><br>
 
             <div id="image_container" class="mb-3">
                 <img src="" class="img-fluid">
@@ -67,6 +67,7 @@
                     </div>
                 </div>
             </div>
+
 
             <!-- Modal -->
             <div class="modal fade" id="stats-modal" tabindex="-1" aria-labelledby="exampleModalLabel"
@@ -112,6 +113,7 @@
         </div>
     </div>
 
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
         crossorigin="anonymous"></script>
@@ -121,12 +123,6 @@
 
         function connect() {
             socket.connect();
-
-            socket.on("connect", function () {
-                socket.emit("user_join");
-                console.log("test3");
-            });
-
             next_question();
         }
 
@@ -154,11 +150,11 @@
 
         socket.on("get_stats", function (data) {
             document.getElementById("stats-container").innerHTML = data;
-        })
+        });
 
         socket.on("get_stats_none", function () {
             document.getElementById("stats-container").innerHTML = "No Data!";
-        })
+        });
 
 
         function guide_get() {
@@ -168,12 +164,14 @@
         socket.on("get_guide", function (data) {
             console.log(data);
             document.getElementById("guide-container").innerHTML = data;
-        })
+        });
 
         socket.on("get_guide_none", function () {
             document.getElementById("guide-container").innerHTML = "There is no guides for this question";
-        })
+        });
 
+
+        let firstCall = true;
 
         socket.on("get_question", function (data) {
             document.getElementById("a_text").style = "";
@@ -181,7 +179,8 @@
             document.getElementById("c_text").style = "";
             document.getElementById("d_text").style = "";
 
-            setTimeout(() => {
+            if (firstCall) {
+                firstCall = false;
                 document.getElementById("result").style.display = "none";
 
                 document.getElementById("a_text").disabled = false;
@@ -195,8 +194,25 @@
                 document.getElementById("b_text").innerText = data.b;
                 document.getElementById("c_text").innerText = data.c;
                 document.getElementById("d_text").innerText = data.d;
-            }, 110);
+            } else {
+                setTimeout(() => {
+                    document.getElementById("result").style.display = "none";
+
+                    document.getElementById("a_text").disabled = false;
+                    document.getElementById("b_text").disabled = false;
+                    document.getElementById("c_text").disabled = false;
+                    document.getElementById("d_text").disabled = false;
+
+                    document.getElementById("question_text").innerText = data.text;
+
+                    document.getElementById("a_text").innerText = data.a;
+                    document.getElementById("b_text").innerText = data.b;
+                    document.getElementById("c_text").innerText = data.c;
+                    document.getElementById("d_text").innerText = data.d;
+                }, 110);
+            }
         });
+
 
         socket.on("check_complete", function (data) {
             document.getElementById("result").style.display = "block";
@@ -205,7 +221,7 @@
             document.getElementById("c_text").disabled = true;
             document.getElementById("d_text").disabled = true;
 
-            a = { "A": "a_text", "B": "b_text", "C": "c_text", "D": "d_text" }
+            a = { "A": "a_text", "B": "b_text", "C": "c_text", "D": "d_text" };
 
             if (data.res) {
                 document.getElementById("result").innerText = "Correct";
@@ -216,7 +232,22 @@
                 document.getElementById("result").innerText = "Incorrect!!! Keep learning!";
             }
             console.log(data);
-        })
+        });
+
+        socket.on("some_problem", function (data) {
+            alert(data);
+        });
+
+        document.addEventListener("visibilitychange", function () {
+            if (document.visibilityState === 'hidden') {
+                // Пользователь ушел с текущей вкладки или окна
+                console.log('Пользователь ушел с текущей вкладки или окна');
+            } else {
+                // Пользователь вернулся на текущую вкладку или окно
+                console.log('Пользователь вернулся на текущую вкладку или окно');
+            }
+        });
+
 
     </script>
 </body>
