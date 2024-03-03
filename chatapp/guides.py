@@ -22,7 +22,7 @@ def index(id):
             return render_template("guide_not_exists.html", data = guide)
         else:
             # Assuming guide is a tuple containing dictionaries, access the first element of the tuple
-            guide_text = markdown2.markdown(guide[0][2])
+            guide_text = markdown2.markdown(guide[0][2], extras=['fenced-code-blocks', 'mermaid'])
 
             # Render the template and pass the converted HTML
             return render_template("guide.html", title=guide[0][1], author=guide[0][3], text=guide_text)

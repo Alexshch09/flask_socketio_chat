@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, session, redirect, url_for, flash, request
+from flask_login import login_required, current_user
 from .extensions import socketio, emit, conn
 import markdown2
 from psycopg2 import OperationalError  # Import OperationalError from psycopg2
@@ -55,6 +56,7 @@ test = Test_one(exam_id)
 
 # Main Page render
 @main.route("/test")
+@login_required
 def index():
     if "user_id" not in session:
         flash("You need to be logged in to access the test.", "error")
@@ -65,16 +67,19 @@ def index():
 
 # Socket.io on Connect
 @socketio.on("connect")
+@login_required
 def handle_connect():
     print("Client connected!")
 
 @socketio.on('disconnect')
+@login_required
 def test_disconnect():
     print('Client disconnected')
 
 
 # Handle next question
 @socketio.on("next_question")
+@login_required
 def handle_new_message():
     question = test.get_random_question()
     if question:
@@ -85,6 +90,7 @@ def handle_new_message():
 
 # Handle answer check
 @socketio.on("check_answer")
+@login_required
 def handle_new_message(data):
     if "question_answered" in session and "question_id" in session:
         if session["question_answered"] == False:
@@ -101,6 +107,7 @@ def handle_new_message(data):
 
 # Send Stats to user
 @socketio.on("send_stats")
+@login_required
 def handle_stats():
     try:
         if "question_answered" in session and "question_id" in session:
@@ -130,6 +137,7 @@ def handle_stats():
 
 
 @socketio.on("send_guide")
+@login_required
 def handle_guide():
     try:
         if "question_answered" in session and "question_id" in session:
@@ -140,7 +148,9 @@ def handle_guide():
                 guide = cursor.fetchall()
 
             if guide:
-                guide_text = markdown2.markdown(guide[0][2])
+                print(guide)
+                guide_text = markdown2.markdown(guide[0][2], extras=['fenced-code-blocks', 'mermaid'])
+                print(guide_text)
                 socketio.emit("get_guide", guide_text)
             else:
                 socketio.emit("get_guide_none")

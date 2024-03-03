@@ -20,6 +20,11 @@
             display: none;
         }
     </style>
+    <style>
+        .mermaid-pre {
+            visibility: hidden;
+        }
+    </style>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
@@ -60,8 +65,7 @@
                             Stats
                         </button>
                         <button id="next_q" class="btn btn-primary" onclick="next_question();">Next Question</button>
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                            data-bs-target="#guide-modal" onclick="guide_get()">
+                        <button type="button" class="btn btn-primary" onclick="guide_get()">
                             Guide
                         </button>
                     </div>
@@ -79,26 +83,6 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body" id="stats-container">
-
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-primary">Save changes</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Modal -->
-            <div class="modal fade" id="guide-modal" tabindex="-1" aria-labelledby="exampleModalLabel"
-                aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body" id="guide-container">
 
                         </div>
                         <div class="modal-footer">
@@ -163,21 +147,25 @@
 
         socket.on("get_guide", function (data) {
             console.log(data);
-            document.getElementById("guide-container").innerHTML = data;
+            window.open("/guides/"+id, "_blank");
         });
 
         socket.on("get_guide_none", function () {
-            document.getElementById("guide-container").innerHTML = "There is no guides for this question";
+            window.open("/guides/"+id, "_blank");
         });
 
 
         let firstCall = true;
+        let id = 0;
 
         socket.on("get_question", function (data) {
             document.getElementById("a_text").style = "";
             document.getElementById("b_text").style = "";
             document.getElementById("c_text").style = "";
             document.getElementById("d_text").style = "";
+
+            id = data.id;
+            console.log(id)
 
             if (firstCall) {
                 firstCall = false;
@@ -254,6 +242,7 @@
 
 
     </script>
+
 </body>
 
 </html>

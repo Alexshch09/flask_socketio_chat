@@ -1,34 +1,26 @@
-# Authentication module for flask_test project
-# Takes data from template form and puts it to postgresql database
-# PostgreSQL connection in the extensions.py
-# Four methods:
-#   /register (gets data from form, checks if username is already taken, hashing password, and saves data to database (egzamin:user), after redirects user to login page)
-#   /login (gets data from form, checks if user exists, checks password, if correct redirects to dashboard, if false gets error, user id is stored in the session["user_id"])
-#   /dashboard (Checks if user_id exists, if true loads an dashboard, else redirects to login page)
-#   /logout (Deletes an user_id from session, redirects to the login page)
-
-from flask import Blueprint, render_template, request, redirect, session, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import current_user
-from .extensions import conn
+from .extensions import conn, login_manager
+from .models import User
 
 auth = Blueprint("auth", __name__)
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.get(user_id)
 
-# Registration Function Get - Page, Post - form data
 @auth.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        username = request.form.get("username")  # username from form
-        password = request.form.get("password")  # password from form
+        username = request.form.get("username")
+        password = request.form.get("password")
 
-        # Check if username is already taken
+        # Check if username already exists
         with conn.cursor() as cursor:
             cursor.execute("SELECT * FROM users WHERE login = %s", (username,))
             if cursor.fetchone():
-                flash(
-                    "Username already exists. Please choose a different one.", "error"
-                )
+                flash("Username already exists. Please choose a different one.", "error")
                 return redirect(url_for("auth.register"))
 
         # Hash the password
@@ -37,36 +29,29 @@ def register():
         # Save the user to the database
         with conn.cursor() as cursor:
             cursor.execute(
-                "INSERT INTO users (login, password, email, nickname) VALUES (%s, %s, %s, %s)",
-                (username, hashed_password, "test1@test.com", "nickname"),
+                "INSERT INTO users (login, password, email, nickname) VALUES (%s, %s, %s, %s)", (username, hashed_password, "hi@hi.com", "test1111")
             )
             conn.commit()
-
-        # Registration succesfull
 
         flash("Registration successful. You can now log in.", "success")
         return redirect(url_for("auth.login"))
 
-    # Render Registration Page
     return render_template("register.html")
 
-
-# Login Function Get - Page, Post - form data
 @auth.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        username = request.form.get("username")  # username from form
-        password = request.form.get("password")  # password from form
+        username = request.form.get("username")
+        password = request.form.get("password")
 
         # Retrieve user from the database
         with conn.cursor() as cursor:
-            cursor.execute(
-                "SELECT * FROM users WHERE login = %s", (username,)
-            )  # Check username
-            user = cursor.fetchone()
+            cursor.execute("SELECT * FROM users WHERE login = %s", (username,))
+            user_data = cursor.fetchone()
 
-        if user and check_password_hash(user[2], password):
-            session["user_id"] = user[0]  # Store user id in session
+        if user_data and check_password_hash(user_data[2], password):
+            user = User(user_id=user_data[0])
+            login_user(user)
             flash("Login successful!", "success")
             return redirect(url_for("auth.dashboard"))
         else:
@@ -74,19 +59,15 @@ def login():
 
     return render_template("login.html")
 
-
-# Dashboard Page
-@auth.route("/dashboard")
-def dashboard():
-    if "user_id" not in session:
-        flash("You need to be logged in to access the dashboard.", "error")
-        return redirect(url_for("auth.login"))
-    return render_template("dashboard.html", current_user=current_user)
-
-
-# Logout
 @auth.route("/logout")
+@login_required
 def logout():
-    session.pop("user_id", None)
+    logout_user()
     flash("You have been logged out.", "info")
     return redirect(url_for("auth.login"))
+
+
+@auth.route("/dashboard")
+@login_required
+def dashboard():
+    return render_template("dashboard.html")
