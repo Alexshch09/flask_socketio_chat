@@ -142,17 +142,8 @@
 
 
         function guide_get() {
-            socket.emit("send_guide");
+            window.open("/guides/"+id, "_blank");
         }
-
-        socket.on("get_guide", function (data) {
-            console.log(data);
-            window.open("/guides/"+id, "_blank");
-        });
-
-        socket.on("get_guide_none", function () {
-            window.open("/guides/"+id, "_blank");
-        });
 
 
         let firstCall = true;

@@ -134,29 +134,3 @@ def handle_stats():
     except OperationalError as e:
         print("Database error:", e)
         socketio.emit("some_problem", "Error occurred while fetching stats")
-
-
-@socketio.on("send_guide")
-@login_required
-def handle_guide():
-    try:
-        if "question_answered" in session and "question_id" in session:
-            query = "SELECT * FROM Guides WHERE question_id = %s LIMIT 1;"
-
-            with conn.cursor() as cursor:
-                cursor.execute(query, (session["question_id"],))
-                guide = cursor.fetchall()
-
-            if guide:
-                print(guide)
-                guide_text = markdown2.markdown(guide[0][2], extras=['fenced-code-blocks', 'mermaid'])
-                print(guide_text)
-                socketio.emit("get_guide", guide_text)
-            else:
-                socketio.emit("get_guide_none")
-        else:
-            socketio.emit("reload_page", request.referrer)
-            
-    except OperationalError as e:
-        print("Database error:", e)
-        socketio.emit("some_problem", "Error occurred while fetching guide")
