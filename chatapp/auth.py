@@ -29,7 +29,7 @@ def register():
         # Save the user to the database
         with conn.cursor() as cursor:
             cursor.execute(
-                "INSERT INTO users (login, password, email, nickname) VALUES (%s, %s, %s, %s)", (username, hashed_password, "hi@hi.com", "test1111")
+                "INSERT INTO users (login, password, email, nickname) VALUES (%s, %s, %s, %s)", (username, hashed_password, "hi1@hi.com", "test1111")
             )
             conn.commit()
 

@@ -42,7 +42,7 @@ class Test_one:
             with conn.cursor() as cursor:
                 cursor.execute(
                     "INSERT INTO Stats (user_id, exam_id, quest_id, answer) VALUES (%s, %s, %s, %s)",
-                    (session["user_id"], self.theme, session["question_id"], data,))
+                    (session["_user_id"], self.theme, session["question_id"], data,))
                 conn.commit()
         except OperationalError as e:
             print("Database error:", e)
@@ -58,11 +58,7 @@ test = Test_one(exam_id)
 @main.route("/test")
 @login_required
 def index():
-    if "user_id" not in session:
-        flash("You need to be logged in to access the test.", "error")
-        return redirect(url_for("auth.login"))
-    else:
-        return render_template("test1.html")
+    return render_template("test1.html")
 
 
 # Socket.io on Connect
@@ -111,7 +107,7 @@ def handle_new_message(data):
 def handle_stats():
     try:
         if "question_answered" in session and "question_id" in session:
-            user_id = session["user_id"]
+            user_id = session["_user_id"]
             query = "SELECT s.answer, q.correct_answer, s.date AS question_text FROM Stats s JOIN Questions q ON s.quest_id = q.id WHERE s.user_id = %s AND s.quest_id = %s ORDER BY date DESC;"
 
             with conn.cursor() as cursor:
