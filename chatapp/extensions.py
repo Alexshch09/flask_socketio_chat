@@ -1,11 +1,8 @@
-from flask_socketio import SocketIO, emit
 import psycopg2
 from flask_login import LoginManager
 
 
 login_manager = LoginManager()
-
-socketio = SocketIO() # Socket.io global config
 
 # PostgreSQL global connection configuration
 conn = psycopg2.connect(
