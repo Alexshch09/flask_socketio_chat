@@ -4,6 +4,7 @@ from flask_session import Session
 from .extensions import conn, login_manager
 from .auth import *
 from .main_page import *
+from .test import *
 
 
 def create_app():
@@ -16,6 +17,7 @@ def create_app():
 
     app.register_blueprint(auth) # Auth (Login/Register)
     app.register_blueprint(lending)
+    app.register_blueprint(test)
 
     Session(app) # Sessions init
 

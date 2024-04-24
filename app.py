@@ -1,5 +1,3 @@
-from chatapp import create_app, socketio
+from chatapp import create_app
 
 app = create_app() # Create an application
-
-socketio.run(app) # Launch socket.io

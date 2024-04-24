@@ -4,6 +4,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from .extensions import conn, login_manager
 from flask_login import UserMixin
 
+import random
+
 class User(UserMixin):
     def __init__(self, user_id):
         self.id = user_id
@@ -21,7 +23,7 @@ class User(UserMixin):
 
 
 
-import random
+
 
 auth = Blueprint("auth", __name__)
 
